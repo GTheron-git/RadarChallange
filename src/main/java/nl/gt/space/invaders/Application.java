@@ -22,6 +22,8 @@ public class Application {
 			List<Image> spaceInvaders = MdFileImageLoader.getImagesFromMdFile("SpaceInvaders_2.0.md", invadersSection);
 			for (Image i : spaceInvaders) System.out.println(i.print());
 			List<Image> radarImages = MdFileImageLoader.getImagesFromMdFile("SpaceInvaders_2.0.md", radarSection);
+			for (Image i : radarImages) System.out.println(i.print());
+
 			RadarMatcher.matchKnownInvaders(radarImages.get(0), spaceInvaders);
 		} catch (IOException e) {
 

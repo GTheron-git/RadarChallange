@@ -8,5 +8,18 @@ import lombok.Data;
 public class Point {
     private int row;
     private int col;
-    private int magnitude;
+    private float magnitude;
+    private float row_float;
+    private float col_float;
+    private int cluster;
+
+    public Point(int row, int col, float magnitude) {
+        this.row = row;
+        this.col = col;
+        this.magnitude = magnitude;
+        this.cluster = 0;
+        this.row_float = (float) row;
+        this.col_float = (float) col;
+        this.cluster = 0;
+    }
 }
