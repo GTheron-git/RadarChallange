@@ -1,7 +1,7 @@
 package nl.gt.space.invaders.util;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.gt.space.invaders.dto.Image;
+import nl.gt.space.invaders.entity.Image;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +39,7 @@ public class MdFileImageLoader {
 
     private static List<Image> getImagesInSection(Scanner sectionScanner) throws IOException {
         List<Image> imageList = new ArrayList();
+        int imageId = 0;
         while (hasMoreImageStreams(sectionScanner)) {
             List<String> imageStringStream = getNextImageStream(sectionScanner);
 
@@ -46,8 +47,9 @@ public class MdFileImageLoader {
                 log.warn("Validation of image stream failed. Ignoring image.");
                 continue;
             }
-
-            imageList.add(new Image(imageStringStream));
+            Image im = new Image(imageStringStream);
+            im.setId(imageId++);
+            imageList.add(im);
         }
 
         return imageList;
