@@ -1,5 +1,6 @@
 package nl.gt.space.invaders.util;
 
+import nl.gt.space.invaders.entity.Frame;
 import nl.gt.space.invaders.entity.Image;
 import nl.gt.space.invaders.entity.Point;
 
@@ -8,16 +9,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ClusterUtil {
+
     private static final float maxStepSizeAsConverged = 0.5f;
     private static final float mergeClustersWhenCloserThan = 2.0f;
 
     public static int movingMeanSquareCluster(Image correlationImage, int maxInvaderHeight, int maxInvaderWidth) {
-        // assume invader is always divisable by 2 XXX
+
         int clusterRowStep = maxInvaderHeight / 2;
         int clusterColStep = maxInvaderWidth / 2;
         List<Point> clusterCentroids = new ArrayList<>();
         int frameHeight = clusterRowStep - 1;
-        int frameWidth  = clusterColStep - 1;
+        int frameWidth = clusterColStep - 1;
+
         // create a set of cluster points spaced apart by same dimentions as the size of the invader
         for (int i = clusterRowStep; i + clusterRowStep < correlationImage.getRows(); i += clusterRowStep) {
             for (int j = clusterColStep; j + clusterColStep < correlationImage.getCols(); j += clusterColStep) {
@@ -25,40 +28,41 @@ public class ClusterUtil {
             }
         }
 
-        // Step 1: calculate median point of density in frame centered by cluster centroid
-
-
-        // calculate new cluster centroid positions
-
+        // calculate convergence series for valid cluster centroids
         boolean finishedClustering = false;
         while (!finishedClustering) {
             // do mean avergae sweep
-            clusterCentroids.stream().forEach(p -> calculateClusterMedian(p, correlationImage, frameHeight, frameWidth));
+            clusterCentroids.stream()
+                    .forEach(p -> calculateClusterMedian(p, correlationImage, frameHeight, frameWidth));
+
             // remove centroids that simply wont move
             clusterCentroids = clusterCentroids.stream().filter(p -> !(p.getCluster() == -1))
                     .collect(Collectors.toList());
+
             // remove cluster centroid that lie in close proximity
             clusterCentroids = mergeCloseClusters(clusterCentroids);
-            finishedClustering = isComplete(clusterCentroids);
 
+            //check if there are more clusters which will move a significant distance
+            finishedClustering = isComplete(clusterCentroids);
         }
 
         // by now we should have all clusters. assign clusters
         int clusterId = 0;
-        for ( Point p :clusterCentroids) {
+        for (Point p : clusterCentroids) {
             p.setCluster(clusterId++);
             p.setRow((int) p.getRow_float());
             p.setCol((int) p.getCol_float());
         }
 
-        for (int i =  0; i < correlationImage.getRows(); ++i) {
+        // determine in which cluster each point in the radar image belongs to and eliminate insignificant points
+        for (int i = 0; i < correlationImage.getRows(); ++i) {
             for (int j = 0; j < correlationImage.getCols(); ++j) {
                 Point targetPoint = correlationImage.getPointData()[i][j];
                 if (targetPoint.getMagnitude() == 0f) {
                     targetPoint.setCluster(-1);
                     continue;
                 }
-                float minDistance = (float) correlationImage.getCols(); // this is an assumption on longest possible distance
+                float minDistance = (float) correlationImage.getCols(); // cannot be more than image boundary
                 for (Point p : clusterCentroids) {
                     float testDistance = targetPoint.distanceFrom(p);
                     if (testDistance < minDistance) {
@@ -72,7 +76,7 @@ public class ClusterUtil {
         return --clusterId;
     }
 
-    private static boolean isComplete(List<Point>  clusterCentroids) {
+    private static boolean isComplete(List<Point> clusterCentroids) {
         return clusterCentroids.stream().filter(p -> p.getMagnitude() >= maxStepSizeAsConverged).count() == 0;
     }
 
@@ -81,7 +85,7 @@ public class ClusterUtil {
             Point p = clusterCentroids.get(i);
 
             for (int j = i + 1; j < clusterCentroids.size(); ) {
-                if(p.distanceFrom(clusterCentroids.get(j)) <  mergeClustersWhenCloserThan) {
+                if (p.distanceFrom(clusterCentroids.get(j)) < mergeClustersWhenCloserThan) {
                     clusterCentroids.remove(j);
                 } else {
                     j++;
@@ -92,44 +96,81 @@ public class ClusterUtil {
         return clusterCentroids;
     }
 
-    public static void calculateClusterMedian(Point p, Image targetimage, int frameHeight, int frameWidth) {
+    public static void calculateClusterMedian(Point p, Image targetimage, int halfOfFrameHeight, int halfOfFrameWidth) {
         float totalHitsInFrame = 0f;
 
-        int currentRow = (int) p.getRow_float();
-        int currentCol = (int) p.getCol_float();
+        // define a valid window around the cluster centroid p
+        Frame window = defineFrame(p, targetimage, halfOfFrameHeight, halfOfFrameWidth);
 
-        int maxFrameRow = currentRow + frameHeight;
-        if (maxFrameRow > targetimage.getRows()) maxFrameRow = targetimage.getRows();
-        int minFrameRow = currentRow - frameHeight;
-        if (minFrameRow < 0) minFrameRow = 0;
-        int maxFrameCol = currentCol + frameWidth;
-        if (maxFrameCol > targetimage.getCols()) maxFrameCol = targetimage.getCols();
-        int minFrameCol = currentCol - frameWidth;
-        if (minFrameCol < 0) minFrameCol = 0;
-        for (int i = minFrameRow; i < maxFrameRow; ++i) {
-            for (int j = minFrameCol; j < maxFrameCol; ++j) {
+        // get total hits in window
+        for (int i = window.getMinRow(); i < window.getMaxRow(); ++i) {
+            for (int j = window.getMinCol(); j < window.getMaxCol(); ++j) {
                 totalHitsInFrame += targetimage.getPointData()[i][j].getMagnitude();
             }
         }
 
+        //if no points in window then this cluster point will be ignored
         if (totalHitsInFrame == 0) {
-            //indicates it will be deleted
             p.setCluster(-1);
             return;
         }
 
-        p.setMagnitude(0); // this will hold the distance needed to travel to next median point
+        p.setMagnitude(0);
+        // store initial position
         float initialRowPosition = p.getRow_float();
         float initialColPosition = p.getCol_float();
-        float median = totalHitsInFrame/2;
 
+        //calculate new median position
+        float medianRowPercentile = calcMedianRowPercentile(window,
+                totalHitsInFrame, targetimage);
+        float medianColPercentile = calcMedianColPercentile(window,
+                totalHitsInFrame, targetimage);
+
+        // store new position
+        p.setRow_float(medianRowPercentile);
+        p.setCol_float(medianColPercentile);
+
+        // calculate distance from original position
+        float deltaCol = (p.getCol_float() - initialColPosition);
+        float deltaRow = (p.getRow_float() - initialRowPosition);
+        p.setMagnitude((float) Math
+                .sqrt(deltaCol * deltaCol + deltaRow * deltaRow)); // distance = sqrt((x - x0)^2 + (y - y0)^2)
+    }
+
+    private static Frame defineFrame(Point p, Image targetimage, int halfOfFrameHeight, int halfOfFrameWidth) {
+        int currentRow = (int) p.getRow_float();
+        int currentCol = (int) p.getCol_float();
+
+        // determine window extremities
+        int maxFrameRow = currentRow + halfOfFrameHeight;
+        if (maxFrameRow > targetimage.getRows()) {
+            maxFrameRow = targetimage.getRows();
+        }
+        int minFrameRow = currentRow - halfOfFrameHeight;
+        if (minFrameRow < 0) {
+            minFrameRow = 0;
+        }
+        int maxFrameCol = currentCol + halfOfFrameWidth;
+        if (maxFrameCol > targetimage.getCols()) {
+            maxFrameCol = targetimage.getCols();
+        }
+        int minFrameCol = currentCol - halfOfFrameWidth;
+        if (minFrameCol < 0) {
+            minFrameCol = 0;
+        }
+
+        return new Frame(minFrameRow, maxFrameRow, minFrameCol, maxFrameCol);
+    }
+
+    private static float calcMedianRowPercentile(Frame window, float totalHitsInFrame, Image targetimage) {
         float medianRowPercentile = 0;
+        float median = totalHitsInFrame / 2;
         float topTotal = 0;
         float bottomTotal = 0;
 
-        for (int i = minFrameRow; i < maxFrameRow; ++i) {
+        for (int i = window.getMinRow(); i < window.getMaxRow(); ++i) {
             float rowTotal = 0;
-            for (int j = minFrameCol; j < maxFrameCol; ++j) {
+            for (int j = window.getMinCol(); j < window.getMaxCol(); ++j) {
                 rowTotal += targetimage.getPointData()[i][j].getMagnitude();
             }
 
@@ -147,15 +188,18 @@ public class ClusterUtil {
                 break;
             }
         }
+        return medianRowPercentile;
+    }
 
-        p.setRow_float(medianRowPercentile);
-
+    private static float calcMedianColPercentile(Frame window, float totalHitsInFrame, Image targetimage) {
         float medianColPercentile = 0;
+        float median = totalHitsInFrame / 2;
         float leftTotal = 0;
         float rightTotal = 0;
-        for (int i = minFrameCol; i < maxFrameCol; ++i) {
+
+        for (int i = window.getMinCol(); i < window.getMaxCol(); ++i) {
             float colTotal = 0;
-            for (int j = minFrameRow; j < maxFrameRow; ++j) {
+            for (int j = window.getMinRow(); j < window.getMaxRow(); ++j) {
                 colTotal += targetimage.getPointData()[j][i].getMagnitude();
             }
 
@@ -173,12 +217,7 @@ public class ClusterUtil {
                 break;
             }
         }
-
-        p.setCol_float(medianColPercentile);
-
-        // distance = sqrt((x - x0)^2 + (y - y0)^2)
-        float deltaCol = (p.getCol_float() - initialColPosition);
-        float deltaRow = (p.getRow_float() - initialRowPosition);
-        p.setMagnitude((float) Math.sqrt(deltaCol*deltaCol + deltaRow*deltaRow));
+        return medianColPercentile;
     }
+
 }

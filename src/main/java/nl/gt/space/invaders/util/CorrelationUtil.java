@@ -90,6 +90,27 @@ public class CorrelationUtil {
         }
     }
 
+    public static void recorrelateInvader(int row_ref, int col_ref, Image radarImage, Image invader) {
+        if (Objects.isNull(invader)) {
+            return;
+        }
+
+        int rowOffset = -(invader.getRows()/2);
+        int colOffset = -(invader.getCols()/2);
+        for (int i = 0; i < invader.getRows(); ++i) {
+            for (int j = 0; j < invader.getCols(); ++j) {
+                int radarRow = i + row_ref + rowOffset;
+                int radarCol = j + col_ref + colOffset;
+                if (!isValidCoordinate(radarRow, radarCol, radarImage)) continue;
+
+                if (invader.getPointData()[i][j].getMagnitude() == 1.0f) {
+                    radarImage.getPointData()[radarRow][radarCol].setMagnitude(1.0f);
+                    radarImage.getPointData()[radarRow][radarCol].setPrintchar('o');
+                }
+            }
+        }
+    }
+
     private static boolean isValidCoordinate(int row, int col, Image targetImage) {
         if (row < 0 || row >= targetImage.getRows()) return false;
         if (col < 0 || col >= targetImage.getCols()) return false;
