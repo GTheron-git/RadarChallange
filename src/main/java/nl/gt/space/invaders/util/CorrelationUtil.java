@@ -16,7 +16,7 @@ public class CorrelationUtil {
 
                 resultImage.getPointData()[row_ref][col_ref].setMagnitude(hitsRatioPair.getKey());
 
-                if (hitsRatioPair.getKey()/hitsRatioPair.getValue() > hitCutoffRatio) {
+                if (hitsRatioPair.getKey() / hitsRatioPair.getValue() > hitCutoffRatio) {
                     resultImage.getPointData()[row_ref][col_ref].setMagnitude(hitsRatioPair.getKey());
                 } else {
                     resultImage.getPointData()[row_ref][col_ref].setCluster(-1);
@@ -31,14 +31,18 @@ public class CorrelationUtil {
     public static Pair<Float, Float> calculateHitsRatio(int row_ref, int col_ref, Image radarImage, Image invader) {
         float totalHits = 0f;
         float possibleHits = 0f;
-        int rowOffset = -(invader.getRows()/2);
-        int colOffset = -(invader.getCols()/2);
+        int rowOffset = -(invader.getRows() / 2);
+        int colOffset = -(invader.getCols() / 2);
         for (int i = 0; i < invader.getRows(); ++i) {
             for (int j = 0; j < invader.getCols(); ++j) {
                 int radarRow = i + row_ref + rowOffset;
                 int radarCol = j + col_ref + colOffset;
-                if (!isValidCoordinate(radarRow, radarCol, radarImage)) continue;
-                if (invader.getPointData()[i][j].getMagnitude() != 1.0f) continue;
+                if (!isValidCoordinate(radarRow, radarCol, radarImage)) {
+                    continue;
+                }
+                if (invader.getPointData()[i][j].getMagnitude() != 1.0f) {
+                    continue;
+                }
 
                 possibleHits += 1.0f;
                 if (invader.getPointData()[i][j].getMagnitude() == 1.0f
@@ -55,13 +59,15 @@ public class CorrelationUtil {
             return;
         }
 
-        int rowOffset = -(invader.getRows()/2);
-        int colOffset = -(invader.getCols()/2);
+        int rowOffset = -(invader.getRows() / 2);
+        int colOffset = -(invader.getCols() / 2);
         for (int i = 0; i < invader.getRows(); ++i) {
             for (int j = 0; j < invader.getCols(); ++j) {
                 int radarRow = i + row_ref + rowOffset;
                 int radarCol = j + col_ref + colOffset;
-                if (!isValidCoordinate(radarRow, radarCol, radarImage)) continue;
+                if (!isValidCoordinate(radarRow, radarCol, radarImage)) {
+                    continue;
+                }
                 if (invader.getPointData()[i][j].getMagnitude() == 1.0f) {
                     radarImage.getPointData()[radarRow][radarCol].setMagnitude(0f);
                 }
@@ -74,17 +80,20 @@ public class CorrelationUtil {
             return;
         }
 
-        int rowOffset = -(invader.getRows()/2);
-        int colOffset = -(invader.getCols()/2);
+        int rowOffset = -(invader.getRows() / 2);
+        int colOffset = -(invader.getCols() / 2);
         for (int i = 0; i < invader.getRows(); ++i) {
             for (int j = 0; j < invader.getCols(); ++j) {
                 int radarRow = i + row_ref + rowOffset;
                 int radarCol = j + col_ref + colOffset;
-                if (!isValidCoordinate(radarRow, radarCol, radarImage)) continue;
+                if (!isValidCoordinate(radarRow, radarCol, radarImage)) {
+                    continue;
+                }
 
                 if (invader.getPointData()[i][j].getMagnitude() == 1.0f) {
                     radarImage.getPointData()[radarRow][radarCol].setMagnitude(1.0f);
-                    radarImage.getPointData()[radarRow][radarCol].setPrintchar(String.valueOf(invader.getId()).charAt(0));
+                    radarImage.getPointData()[radarRow][radarCol]
+                            .setPrintchar(String.valueOf(invader.getId()).charAt(0));
                 }
             }
         }
@@ -95,13 +104,15 @@ public class CorrelationUtil {
             return;
         }
 
-        int rowOffset = -(invader.getRows()/2);
-        int colOffset = -(invader.getCols()/2);
+        int rowOffset = -(invader.getRows() / 2);
+        int colOffset = -(invader.getCols() / 2);
         for (int i = 0; i < invader.getRows(); ++i) {
             for (int j = 0; j < invader.getCols(); ++j) {
                 int radarRow = i + row_ref + rowOffset;
                 int radarCol = j + col_ref + colOffset;
-                if (!isValidCoordinate(radarRow, radarCol, radarImage)) continue;
+                if (!isValidCoordinate(radarRow, radarCol, radarImage)) {
+                    continue;
+                }
 
                 if (invader.getPointData()[i][j].getMagnitude() == 1.0f) {
                     radarImage.getPointData()[radarRow][radarCol].setMagnitude(1.0f);
@@ -112,8 +123,12 @@ public class CorrelationUtil {
     }
 
     private static boolean isValidCoordinate(int row, int col, Image targetImage) {
-        if (row < 0 || row >= targetImage.getRows()) return false;
-        if (col < 0 || col >= targetImage.getCols()) return false;
+        if (row < 0 || row >= targetImage.getRows()) {
+            return false;
+        }
+        if (col < 0 || col >= targetImage.getCols()) {
+            return false;
+        }
         return true;
     }
 }

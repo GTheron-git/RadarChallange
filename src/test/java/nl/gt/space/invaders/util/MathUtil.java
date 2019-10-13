@@ -1,4 +1,4 @@
-package nl.gt.space.invaders;
+package nl.gt.space.invaders.util;
 
 public class MathUtil {
     public static int generateRandomNumber(int scale) {

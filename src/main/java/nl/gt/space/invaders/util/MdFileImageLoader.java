@@ -15,8 +15,8 @@ public class MdFileImageLoader {
 
     private static final String IMAGE_REGEX = "^[-o]*$";
     private static String codeblockDelimitor = "~~~";
-    private static final String sectionDelimitor = "#"; // assume === and --- underscores are not used for markdown in document
-
+    private static final String sectionDelimitor = "#"; // assume === and --- underscores are not used for markdown
+    // in document
 
     public static List<Image> getImagesFromMdFile(String filename, String sectionMatchString) throws IOException {
 

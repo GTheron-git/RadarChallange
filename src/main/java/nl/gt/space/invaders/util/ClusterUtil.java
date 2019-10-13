@@ -121,10 +121,8 @@ public class ClusterUtil {
         float initialColPosition = p.getCol_float();
 
         //calculate new median position
-        float medianRowPercentile = calcMedianRowPercentile(window,
-                totalHitsInFrame, targetimage);
-        float medianColPercentile = calcMedianColPercentile(window,
-                totalHitsInFrame, targetimage);
+        float medianRowPercentile = calcMedianRowPercentile(window, totalHitsInFrame, targetimage);
+        float medianColPercentile = calcMedianColPercentile(window, totalHitsInFrame, targetimage);
 
         // store new position
         p.setRow_float(medianRowPercentile);

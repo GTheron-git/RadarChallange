@@ -2,7 +2,7 @@ package nl.gt.space.invaders.service;
 
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
-import nl.gt.space.invaders.MathUtil;
+import nl.gt.space.invaders.util.MathUtil;
 import nl.gt.space.invaders.entity.Image;
 import nl.gt.space.invaders.entity.Point;
 import nl.gt.space.invaders.util.CorrelationUtil;
@@ -30,6 +30,7 @@ public class RadarMatcherTest {
     private float minimumDistanceBetweenInvaders = 5f;
     private float requiredSuccessRate = 0.7f;
     private int numberOfTestRuns = 20;
+
     @Autowired
     private ImageService imageService;
 
@@ -50,12 +51,12 @@ public class RadarMatcherTest {
     @Test
     public void matchKnownInvaders() {
         float successfulTests = 0.0f;
-        for ( int testRun = 0; testRun < numberOfTestRuns; ++testRun) {
+        for (int testRun = 0; testRun < numberOfTestRuns; ++testRun) {
             successfulTests += testScanPerfectMatch() == Boolean.TRUE ? 1.0f : 0.0f;
         }
 
-        log.info("Number of test runs [{}], number of perfect matches [{}]", numberOfTestRuns, successfulTests );
-        assertTrue((successfulTests/(float)numberOfTestRuns) > requiredSuccessRate);
+        log.info("Number of test runs [{}], number of perfect matches [{}]", numberOfTestRuns, successfulTests);
+        assertTrue((successfulTests / (float) numberOfTestRuns) > requiredSuccessRate);
     }
 
     private boolean testScanPerfectMatch() {
@@ -67,8 +68,9 @@ public class RadarMatcherTest {
             int randomInvaderId = MathUtil.generateRandomNumber(1);
             Point testHitPoint = new Point(randomRow, randomCol, 1.0f);
 
-            if (i > 0 && shortestDistanceToNeighbour(testHitPoint, testHits.stream().map(p -> p.getKey()).collect(
-                    Collectors.toList())) < minimumDistanceBetweenInvaders) {
+            if (i > 0 && shortestDistanceToNeighbour(testHitPoint,
+                    testHits.stream().map(p -> p.getKey()).collect(Collectors.toList()))
+                         < minimumDistanceBetweenInvaders) {
                 i--;
                 continue;
             }
@@ -95,7 +97,8 @@ public class RadarMatcherTest {
 
         for (int i = 0; i < testImage.getRows(); ++i) {
             for (int j = 0; j < testImage.getCols(); ++j) {
-                if (testImage.getPointData()[i][j].getPrintchar() != scannedRadarImage.getPointData()[i][j].getPrintchar()) {
+                if (testImage.getPointData()[i][j].getPrintchar() != scannedRadarImage.getPointData()[i][j]
+                        .getPrintchar()) {
                     return false;
                 }
             }
