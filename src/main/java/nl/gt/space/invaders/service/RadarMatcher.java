@@ -41,7 +41,7 @@ public class RadarMatcher {
                 .map(i -> CorrelationUtil.getCorrelationImage(radarImage, i, constants.getCutoffMatchDensity()))
                 .collect(Collectors.toList());
 
-        // Overlay these images on top of another to get a singe image representing greatest areas of correlation
+        // Overlay these images on top of another to get a single image representing greatest areas of correlation
         // between all invaders and rader image
         Image mergedImage = ImageUtil.mergeImages(correlationImageList);
 

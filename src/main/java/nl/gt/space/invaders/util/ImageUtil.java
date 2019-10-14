@@ -76,7 +76,7 @@ public class ImageUtil {
                 }
             }
         }
-        System.out.println(ImageUtil.printChars(resultImage));
+
         return resultImage;
 
     }
