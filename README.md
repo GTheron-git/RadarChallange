@@ -22,18 +22,23 @@ scanned radar image.
 in src/main/resources/application.properties you will find a few settings. You can keep all these defaulted.
 
 - File name to load images from
+
 `constants.filename=./data/SpaceInvaders_2.0.md`
 
-- Text to scan for in the document to identify a section conatining invaders
+- Text to scan for in the document to identify a section containing invaders
+
 `constants.invaderSectionIdentifier=Known space invaders`
 
 - Text to scan for in the document to identify radar images
+
 `constants.radarSectionIdentifier=Example radar image`
 
 - Cutoff correlation (as percentage/100) in radar image where an invader is ignored
+
 `constants.cutoffMatchDensity=0.4`
 
 - Minimum correlation (as percentage/100) in radar image where an invader is considered present
+
 `constants.acceptedMatchRatioForHit=0.75`
 
 ## Running project
