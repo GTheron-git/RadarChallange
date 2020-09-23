@@ -1,12 +1,12 @@
 package nl.gt.space.invaders.service;
 
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import nl.gt.space.invaders.util.MathUtil;
 import nl.gt.space.invaders.entity.Image;
 import nl.gt.space.invaders.entity.Point;
 import nl.gt.space.invaders.util.CorrelationUtil;
 import nl.gt.space.invaders.util.ImageUtil;
+import nl.gt.space.invaders.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

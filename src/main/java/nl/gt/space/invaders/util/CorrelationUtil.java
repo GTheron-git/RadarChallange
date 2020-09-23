@@ -1,6 +1,5 @@
 package nl.gt.space.invaders.util;
 
-import javafx.util.Pair;
 import nl.gt.space.invaders.entity.Image;
 
 import java.util.Objects;
